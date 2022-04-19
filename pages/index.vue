@@ -3,9 +3,54 @@
     <!-- Hero-->
     <Hero />
 
+    <!-- Search-->
+    <div class="search container">
+      <input @keyup.enter="$fetch" type="text" placeholder="Search" v-model.lazy="searchInput"/>
+      <button @click="clearSearch" v-show="searchInput !== ''" class="button">Clear Search</button>
+    </div>
+
     <!-- movies List-->
     <div class="container movies">
-      <div id="#movie-grid" class="movies-grid">
+
+       <!-- Searched Movies-->
+
+      <div v-if="searchInput !== ''" id="#movie-grid" class="movies-grid">
+        <div class="movie" v-for="(movie, index) in searchedMovies" :key="index">
+          <div class="movie-img">
+            <img
+              :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+              alt=""
+            />
+            <p class="review">{{ movie.vote_average }}</p>
+            <p class="overview">{{ movie.overview }}</p>
+          </div>
+          <div class="info">
+            <p class="title">
+              {{ movie.title.slice(0, 25) }}
+              <span v-if="movie.title.length > 25">...</span>
+            </p>
+
+            <p class="release">
+              Released:
+              {{
+                new Date(movie.release_date).toLocaleString("en-us", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              }}
+            </p> 
+            <NuxtLink 
+            class="button button-light" 
+            :to="{name: 'movies-movieid', 
+            params:{movieid:movie.id}}"
+            >Get More Info</NuxtLink>
+          </div>
+        </div>
+      </div>
+
+           <!-- Streaming Movies-->
+ <div v-else id="#movie-grid" class="movies-grid">
         <div class="movie" v-for="(movie, index) in movies" :key="index">
           <div class="movie-img">
             <img
@@ -39,6 +84,8 @@
           </div>
         </div>
       </div>
+
+
     </div>
   </div>
 </template>
@@ -50,9 +97,14 @@ export default {
   data() {
     return {
       movies: [],
+      searchedMovies: [],
+      searchInput: '',
     };
   },
   async fetch() {
+
+    if (this.searchInput === ''){
+    
     const data = await fetch(
       "https://api.themoviedb.org/3/movie/now_playing?api_key=&language=en-US&page=1"
     );
@@ -63,12 +115,57 @@ export default {
       this.movies.push(movie);
     });
 
-    console.log(this.movies);
+    // console.log(this.movies);
+
+    }
+
+    if (this.searchInput !== '') {
+    
+    const searchedData = await fetch(
+      `https://api.themoviedb.org/3/search/movie?api_key=&language=en-US&page=1&query=${this.searchInput}`
+    );
+    const response = await searchedData.json();
+    // console.log(response, "RESULT")
+
+    response.results.forEach((movie) => {
+      this.searchedMovies.push(movie);
+    });
+
+    // console.log(this.searchedMovies);
+
+    }
   },
+  methods:{
+    clearSearch(){
+      this.searchInput = '';
+      this.searchedMovies= []
+    }
+  }
 };
 </script>
 
 <style lang="scss" scoped>
+
+ .search {
+    display: flex;
+    padding: 32px 16px;
+    input {
+      max-width: 350px;
+      width: 100%;
+      padding: 12px 6px;
+      font-size: 14px;
+      border: none;
+      &:focus {
+        outline: none;
+      }
+    }
+    .button {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+
 .movies {
     padding: 32px 16px;
     .movies-grid {
@@ -85,7 +182,7 @@ export default {
       @media (min-width: 1100px) {
         grid-template-columns: repeat(4, 1fr);
       }
-      .movie {
+        .movie {
         position: relative;
         display: flex;
         flex-direction: column;
