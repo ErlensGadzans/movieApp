@@ -102,6 +102,23 @@
 // import axios from 'axios'
 export default {
   name: 'Index',
+  head() {
+    return {
+      title: 'Latest Streaming movie info',
+      meta: [
+        {
+          hid: 'description',
+          name: 'description',
+          content: 'Get all the latest streaming movies',
+        },
+        {
+          hid: 'keywords',
+          name: 'keywords',
+          content: 'movies, stream, streaming',
+        },
+      ],
+    }
+  },
   data() {
     return {
       movies: [],
