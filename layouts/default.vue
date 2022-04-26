@@ -1,5 +1,6 @@
 <template>
 <div class="app">
-  <Nuxt />
+  //keep-alive not rewriting the function 
+  <Nuxt keep-alive /> 
 </div>
 </template>
